@@ -2,18 +2,21 @@
 
 import { useState, useEffect } from "react";
 import { studyPlans } from "@/data/categories";
+import { scriptures } from "@/data/scriptures";
 import { getNotebooks, getNotes, type Notebook } from "@/lib/notes";
 import NotebooksView from "@/components/NotebooksView";
 import NotebookDetail from "@/components/NotebookDetail";
 import StudyPlanView from "@/components/StudyPlanView";
 import SearchView from "@/components/SearchView";
+import ScriptureReader from "@/components/ScriptureReader";
 
 type View =
   | { type: "home" }
   | { type: "notebooks" }
   | { type: "notebook-detail"; notebook: Notebook }
   | { type: "study-plan"; planId: string }
-  | { type: "search" };
+  | { type: "search" }
+  | { type: "scripture"; bookIndex: number; chapter: number };
 
 export default function Home() {
   const [view, setView] = useState<View>({ type: "home" });
@@ -54,6 +57,11 @@ export default function Home() {
 
   if (view.type === "search") {
     return <SearchView onBack={() => setView({ type: "home" })} />;
+  }
+
+  if (view.type === "scripture") {
+    const ch = scriptures[view.bookIndex];
+    return <ScriptureReader chapter={ch} onBack={() => setView({ type: "home" })} />;
   }
 
   return (
@@ -126,9 +134,37 @@ export default function Home() {
             </button>
           ))}
         </div>
+
+        {/* Scriptures */}
+        <div className="flex items-center gap-3 pt-1">
+          <div className="h-px bg-gray-200 flex-1" />
+          <span className="text-xs text-text-muted uppercase tracking-wide">Escrituras</span>
+          <div className="h-px bg-gray-200 flex-1" />
+        </div>
+
+        <div className="space-y-3">
+          {scriptures.map((ch, i) => (
+            <button
+              key={i}
+              onClick={() => setView({ type: "scripture", bookIndex: i, chapter: ch.chapter })}
+              className="w-full bg-card rounded-2xl p-5 shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow"
+            >
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-blue-50">
+                📘
+              </div>
+              <div className="text-left flex-1">
+                <h3 className="font-semibold text-text">{ch.book} {ch.chapter}</h3>
+                <p className="text-sm text-text-muted">{ch.verses.length} versículos · Toca para leer y resaltar</p>
+              </div>
+              <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          ))}
+        </div>
       </main>
 
-      <footer className="text-center py-4 text-xs text-text-muted">Come, Study with Me — v0.2</footer>
+      <footer className="text-center py-4 text-xs text-text-muted">Come, Study with Me — v0.3</footer>
     </div>
   );
 }
